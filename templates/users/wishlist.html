@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wishlist - Elegance Fashion Store{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <h1 class="section-title">My Wishlist</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">{{ user.get_full_name|default:user.username }}</h2>
+                    <p class="text-gray-500">{{ user.email }}</p>
+                </div>
+                
+                <div class="p-4">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="{% url 'users:profile' %}" class="block py-2 px-3 rounded hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders:order_history' %}" class="block py-2 px-3 rounded hover:bg-gray-100">
+                                <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'users:wishlist' %}" class="block py-2 px-3 rounded bg-primary text-white">
+                                <i class="fas fa-heart mr-2"></i> My Wishlist
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'account_logout' %}" class="block py-2 px-3 rounded hover:bg-gray-100 text-red-600">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">Wishlist Items</h2>
+                </div>
+                
+                <div class="p-6">
+                    {% if wishlist.products.all %}
+                        <div class="product-grid">
+                            {% for product in wishlist.products.all %}
+                                <div class="product-card animate-fade-in">
+                                    <div class="product-image-container">
+                                        {% with product_image=product.images.first %}
+                                            {% if product_image %}
+                                                <img src="{{ product_image.image.url }}" alt="{{ product.name }}" class="product-image">
+                                            {% else %}
+                                                <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ product.name }}" class="product-image">
+                                            {% endif %}
+                                        {% endwith %}
+                                        
+                                        {% if product.discount_price %}
+                                            <div class="product-badge">{{ product.get_discount_percent }}% OFF</div>
+                                        {% endif %}
+                                        
+                                        <button class="wishlist-btn" 
+                                            data-product-id="{{ product.id }}" 
+                                            data-authenticated="true">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="product-details">
+                                        <div class="product-category">{{ product.category.name }}</div>
+                                        <h3 class="product-title">
+                                            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                                        </h3>
+                                        <div class="product-price">
+                                            {% if product.discount_price %}
+                                                <span class="product-price-original">${{ product.price }}</span>
+                                                <span class="product-price-discount">${{ product.discount_price }}</span>
+                                            {% else %}
+                                                ${{ product.price }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-4">
+                                            <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button type="submit" class="btn btn-primary btn-block">
+                                                    <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-16">
+                            <p class="text-xl text-gray-500 mb-4">Your wishlist is empty.</p>
+                            <a href="{% url 'products:product_list' %}" class="btn btn-primary">Explore Products</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

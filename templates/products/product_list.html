@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if current_category %}
+        {{ current_category.name }} - Elegance Fashion Store
+    {% else %}
+        Shop All Products - Elegance Fashion Store
+    {% endif %}
+{% endblock %}
+
+{% block meta_description %}
+    {% if current_category %}
+        Shop our {{ current_category.name }} collection at Elegance Fashion Store. Find the latest styles and trends.
+    {% else %}
+        Browse our complete collection of fashion items and accessories at Elegance Fashion Store.
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container py-8">
+        <div class="mb-8">
+            <h1 class="section-title">
+                {% if current_category %}
+                    {{ current_category.name }}
+                {% else %}
+                    All Products
+                {% endif %}
+            </h1>
+            
+            {% if current_category and current_category.description %}
+                <div class="text-center mb-8">
+                    <p>{{ current_category.description }}</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Filter Products</h3>
+                    
+                    <form method="get" action=".">
+                        <div class="mb-4">
+                            <label for="id_search" class="block mb-2 font-medium">Search</label>
+                            <input type="text" name="search" id="id_search" placeholder="Search products..." 
+                                   class="form-control" value="{{ request.GET.search }}">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_sort" class="block mb-2 font-medium">Sort by</label>
+                            {{ filter.form.sort }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block mb-2 font-medium">Price Range</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" name="price_min" placeholder="Min" 
+                                       class="form-control" value="{{ request.GET.price_min }}">
+                                <span>-</span>
+                                <input type="number" name="price_max" placeholder="Max" 
+                                       class="form-control" value="{{ request.GET.price_max }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block mb-2 font-medium">Categories</label>
+                            <div class="space-y-2">
+                                {% for category in categories %}
+                                    <div class="flex items-center">
+                                        <input type="checkbox" name="category" value="{{ category.id }}" 
+                                               id="category_{{ category.id }}"
+                                               {% if category.id|stringformat:"i" in request.GET.getlist 'category' %}checked{% endif %}
+                                               class="mr-2">
+                                        <label for="category_{{ category.id }}">{{ category.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">Apply Filters</button>
+                        
+                        {% if request.GET %}
+                            <a href="{% url 'products:product_list' %}" class="btn btn-secondary btn-block mt-4">
+                                Clear Filters
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="lg:col-span-3">
+                {% if products %}
+                    <div class="product-grid">
+                        {% for product in products %}
+                            <div class="product-card animate-fade-in">
+                                <div class="product-image-container">
+                                    {% with product_image=product.images.first %}
+                                        {% if product_image %}
+                                            <img src="{{ product_image.image.url }}" alt="{{ product.name }}" class="product-image">
+                                        {% else %}
+                                            <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ product.name }}" class="product-image">
+                                        {% endif %}
+                                    {% endwith %}
+                                    
+                                    {% if product.discount_price %}
+                                        <div class="product-badge">{{ product.get_discount_percent }}% OFF</div>
+                                    {% endif %}
+                                    
+                                    {% if user.is_authenticated %}
+                                        <button class="wishlist-btn" 
+                                            data-product-id="{{ product.id }}" 
+                                            data-authenticated="true">
+                                            {% if product in user.wishlist.products.all %}
+                                                <i class="fas fa-heart"></i>
+                                            {% else %}
+                                                <i class="far fa-heart"></i>
+                                            {% endif %}
+                                        </button>
+                                    {% else %}
+                                        <button class="wishlist-btn" 
+                                            data-product-id="{{ product.id }}" 
+                                            data-authenticated="false">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="product-details">
+                                    <div class="product-category">{{ product.category.name }}</div>
+                                    <h3 class="product-title">
+                                        <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                                    </h3>
+                                    <div class="product-price">
+                                        {% if product.discount_price %}
+                                            <span class="product-price-original">${{ product.price }}</span>
+                                            <span class="product-price-discount">${{ product.discount_price }}</span>
+                                        {% else %}
+                                            ${{ product.price }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                        <div class="mt-8 flex justify-center">
+                            <ul class="flex space-x-2">
+                                {% if page_obj.has_previous %}
+                                    <li>
+                                        <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page=1" 
+                                           class="btn btn-secondary">&laquo; first</a>
+                                    </li>
+                                    <li>
+                                        <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+                                           class="btn btn-secondary">previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li>
+                                    <span class="btn btn-primary">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li>
+                                        <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}" 
+                                           class="btn btn-secondary">next</a>
+                                    </li>
+                                    <li>
+                                        <a href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.paginator.num_pages }}" 
+                                           class="btn btn-secondary">last &raquo;</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-16">
+                        <p class="text-xl text-gray-500 mb-4">No products found matching your criteria.</p>
+                        <a href="{% url 'products:product_list' %}" class="btn btn-primary">View All Products</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fashion Store{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Elegant fashion store for stylish clothing and bags.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}fashion, clothing, bags, style, accessories{% endblock %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container container">
+            <a href="{% url 'products:featured_products' %}" class="site-logo">Elegance</a>
+            
+            <button class="nav-toggle" aria-expanded="false" aria-controls="main-nav">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav class="main-nav" id="main-nav">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="{% url 'products:featured_products' %}">Home</a></li>
+                    <li class="nav-item"><a href="{% url 'products:product_list' %}">Shop</a></li>
+                    {% for category in categories|slice:":5" %}
+                        <li class="nav-item">
+                            <a href="{% url 'products:product_list_by_category' category.slug %}">{{ category.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            
+            <div class="header-actions">
+                <a href="{% url 'products:product_list' %}?search=" class="header-icon">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'users:profile' %}" class="header-icon">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <a href="{% url 'users:wishlist' %}" class="header-icon">
+                        <i class="fas fa-heart"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="header-icon">
+                        <i class="fas fa-user"></i>
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'cart:cart_detail' %}" class="header-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                    {% with total_items=cart|length %}
+                        {% if total_items > 0 %}
+                            <span class="cart-count">{{ total_items }}</span>
+                        {% endif %}
+                    {% endwith %}
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    {% if messages %}
+        <div class="container">
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message message-{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>Elegance</h3>
+                    <p>Elegance is a premium fashion destination offering the latest trends in clothing and bags.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-pinterest-p"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Shop</h3>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'products:product_list' %}">All Products</a></li>
+                        {% for category in categories|slice:":5" %}
+                            <li><a href="{% url 'products:product_list_by_category' category.slug %}">{{ category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Customer Service</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Returns & Exchanges</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Size Guide</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Account</h3>
+                    <ul class="footer-links">
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'users:profile' %}">My Account</a></li>
+                            <li><a href="{% url 'orders:order_history' %}">Order History</a></li>
+                            <li><a href="{% url 'users:wishlist' %}">Wishlist</a></li>
+                            <li><a href="{% url 'account_logout' %}">Log Out</a></li>
+                        {% else %}
+                            <li><a href="{% url 'account_login' %}">Sign In</a></li>
+                            <li><a href="{% url 'account_signup' %}">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} Elegance Fashion Store. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

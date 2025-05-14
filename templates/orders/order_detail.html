@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.id }} - Elegance Fashion Store{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <h1 class="section-title">Order #{{ order.id }}</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2">
+            <!-- Order Items -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">Order Items</h2>
+                </div>
+                
+                <div class="p-4">
+                    <div class="space-y-6">
+                        {% for item in order.items.all %}
+                            <div class="flex items-start border-b border-gray-200 pb-6 {% if forloop.last %}border-0 pb-0{% endif %}">
+                                <div class="w-20 h-20 bg-gray-100 rounded overflow-hidden mr-4">
+                                    {% with product_image=item.product.images.first %}
+                                        {% if product_image %}
+                                            <img src="{{ product_image.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                            <img src="/static/img/product-placeholder.jpg" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-medium">
+                                        <a href="{{ item.product.get_absolute_url }}" class="hover:text-primary">
+                                            {{ item.product.name }}
+                                        </a>
+                                    </h3>
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        {% if item.size %}Size: {{ item.size }}{% endif %}
+                                        {% if item.color %}{% if item.size %} | {% endif %}Color: {{ item.color }}{% endif %}
+                                    </div>
+                                    <div class="flex justify-between mt-2">
+                                        <span>${{ item.price }} × {{ item.quantity }}</span>
+                                        <span class="font-medium">${{ item.get_cost }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Status -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">Order Status</h2>
+                </div>
+                
+                <div class="p-4">
+                    <div class="relative">
+                        <div class="absolute left-4 top-0 h-full border-l-2 border-gray-200"></div>
+                        
+                        <div class="relative mb-6">
+                            <div class="absolute left-3 -translate-x-1/2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                            <div class="ml-8">
+                                <h3 class="font-medium">Order Placed</h3>
+                                <p class="text-sm text-gray-500">{{ order.created|date:"F j, Y, g:i a" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="relative mb-6">
+                            <div class="absolute left-3 -translate-x-1/2 w-6 h-6 rounded-full 
+                                {% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}
+                                    bg-primary
+                                {% else %}
+                                    bg-gray-300
+                                {% endif %} 
+                                flex items-center justify-center">
+                                {% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-8">
+                                <h3 class="font-medium {% if order.status == 'pending' %}text-gray-500{% endif %}">Processing</h3>
+                                <p class="text-sm text-gray-500">
+                                    {% if order.status == 'processing' or order.status == 'shipped' or order.status == 'delivered' %}
+                                        {{ order.updated|date:"F j, Y, g:i a" }}
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="relative mb-6">
+                            <div class="absolute left-3 -translate-x-1/2 w-6 h-6 rounded-full 
+                                {% if order.status == 'shipped' or order.status == 'delivered' %}
+                                    bg-primary
+                                {% else %}
+                                    bg-gray-300
+                                {% endif %} 
+                                flex items-center justify-center">
+                                {% if order.status == 'shipped' or order.status == 'delivered' %}
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-8">
+                                <h3 class="font-medium {% if order.status == 'pending' or order.status == 'processing' %}text-gray-500{% endif %}">Shipped</h3>
+                                <p class="text-sm text-gray-500">
+                                    {% if order.status == 'shipped' or order.status == 'delivered' %}
+                                        {{ order.updated|date:"F j, Y, g:i a" }}
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="relative">
+                            <div class="absolute left-3 -translate-x-1/2 w-6 h-6 rounded-full 
+                                {% if order.status == 'delivered' %}
+                                    bg-primary
+                                {% else %}
+                                    bg-gray-300
+                                {% endif %} 
+                                flex items-center justify-center">
+                                {% if order.status == 'delivered' %}
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-8">
+                                <h3 class="font-medium {% if order.status != 'delivered' %}text-gray-500{% endif %}">Delivered</h3>
+                                <p class="text-sm text-gray-500">
+                                    {% if order.status == 'delivered' %}
+                                        {{ order.updated|date:"F j, Y, g:i a" }}
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="lg:col-span-1">
+            <!-- Order Summary -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">Order Summary</h2>
+                </div>
+                
+                <div class="p-4">
+                    <div class="space-y-2">
+                        <div class="flex justify-between py-2 border-b border-gray-200">
+                            <span>Subtotal</span>
+                            <span>${{ order.get_total_cost }}</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-200">
+                            <span>Shipping</span>
+                            <span>Free</span>
+                        </div>
+                        <div class="flex justify-between py-2 font-semibold text-lg">
+                            <span>Total</span>
+                            <span>${{ order.get_total_cost }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Information -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">Shipping Information</h2>
+                </div>
+                
+                <div class="p-4">
+                    <h3 class="font-medium mb-2">{{ order.first_name }} {{ order.last_name }}</h3>
+                    <address class="not-italic text-gray-600 mb-4">
+                        {{ order.address }}<br>
+                        {{ order.city }}, {{ order.postal_code }}<br>
+                        {{ order.country }}<br>
+                        {{ order.phone }}
+                    </address>
+                    
+                    <h3 class="font-medium mb-2">Email</h3>
+                    <p class="text-gray-600">{{ order.email }}</p>
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            {% if order.note %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-gray-50 p-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold">Additional Information</h2>
+                    </div>
+                    
+                    <div class="p-4">
+                        <p>{{ order.note }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

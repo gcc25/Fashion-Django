@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Elegance Fashion Store{% endblock %}
+{% block meta_description %}{{ product.meta_description|default:product.description|truncatewords:30 }}{% endblock %}
+{% block meta_keywords %}{{ product.meta_keywords|default:product.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .color-option[data-color="{{ color }}"] {
+        background-color: {{ color }};
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <div class="product-detail">
+        <!-- Product Gallery -->
+        <div class="product-gallery">
+            <div class="product-main-image">
+                {% with product_image=product.images.filter(is_main=True).first %}
+                    {% if product_image %}
+                        <img src="{{ product_image.image.url }}" alt="{{ product.name }}">
+                    {% elif product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ product.name }}">
+                    {% endif %}
+                {% endwith %}
+            </div>
+            
+            <div class="product-thumbnails">
+                {% for image in product.images.all %}
+                    <div class="product-thumbnail {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" 
+                             data-full-img="{{ image.image.url }}">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="product-info">
+            <div class="product-meta">
+                <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+            </div>
+            
+            <h1>{{ product.name }}</h1>
+            
+            <div class="product-price-detail">
+                {% if product.discount_price %}
+                    <div class="current-price">${{ product.discount_price }}</div>
+                    <div class="original-price">${{ product.price }}</div>
+                    <div class="discount-badge">{{ product.get_discount_percent }}% OFF</div>
+                {% else %}
+                    <div class="current-price">${{ product.price }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="product-description">
+                {{ product.description|linebreaks }}
+            </div>
+            
+            <form action="{% url 'cart:cart_add' product.id %}" method="post" class="product-options">
+                {% csrf_token %}
+                
+                {% if product.colors.all %}
+                    <div class="option-group">
+                        <label class="option-label">Color:</label>
+                        <div class="color-options">
+                            {% for color in product.colors.all %}
+                                {% if color.available %}
+                                    <div class="color-option" 
+                                         data-color="{{ color.name }}" 
+                                         style="background-color: {{ color.code }};">
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="color" value="">
+                    </div>
+                {% endif %}
+                
+                {% if product.sizes.all %}
+                    <div class="option-group">
+                        <label class="option-label">Size:</label>
+                        <div class="size-options">
+                            {% for size in product.sizes.all %}
+                                <div class="size-option {% if not size.available %}out-of-stock{% endif %}" 
+                                     data-size="{{ size.name }}">
+                                    {{ size.name }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="size" value="">
+                    </div>
+                {% endif %}
+                
+                <div class="product-actions">
+                    <div class="quantity-group" style="display: flex; align-items: center;">
+                        <button type="button" class="quantity-btn-decrement" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 4px 0 0 4px;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        {{ cart_product_form.quantity }}
+                        <button type="button" class="quantity-btn-increment" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 0 4px 4px 0;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <button type="submit" class="add-to-cart-btn">
+                        <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                    </button>
+                    
+                    {% if user.is_authenticated %}
+                        <button type="button" class="wishlist-btn-detail" 
+                                data-product-id="{{ product.id }}" 
+                                data-authenticated="true">
+                            {% if product in user.wishlist.products.all %}
+                                <i class="fas fa-heart"></i>
+                            {% else %}
+                                <i class="far fa-heart"></i>
+                            {% endif %}
+                        </button>
+                    {% else %}
+                        <button type="button" class="wishlist-btn-detail" 
+                                data-product-id="{{ product.id }}" 
+                                data-authenticated="false">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+            
+            <div class="product-accordions mt-8">
+                <div class="product-accordion">
+                    <div class="accordion-header">
+                        <span>Product Details</span>
+                        <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>{{ product.description|linebreaks }}</p>
+                    </div>
+                </div>
+                
+                <div class="product-accordion">
+                    <div class="accordion-header">
+                        <span>Shipping & Returns</span>
+                        <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Free standard shipping on all orders over $50. Delivery within 3-5 business days.</p>
+                        <p>If you're not completely satisfied with your purchase, you can return it within 30 days for a full refund.</p>
+                    </div>
+                </div>
+                
+                <div class="product-accordion">
+                    <div class="accordion-header">
+                        <span>Size Guide</span>
+                        <span class="accordion-icon"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Please refer to our size guide to find your perfect fit:</p>
+                        <ul style="list-style-type: disc; margin-left: 20px;">
+                            <li>S: Small (US 4-6)</li>
+                            <li>M: Medium (US 8-10)</li>
+                            <li>L: Large (US 12-14)</li>
+                            <li>XL: Extra Large (US 16-18)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+        <div class="mt-16">
+            <h2 class="section-title">You Might Also Like</h2>
+            
+            <div class="product-grid">
+                {% for product in related_products %}
+                    <div class="product-card animate-fade-in">
+                        <div class="product-image-container">
+                            {% with product_image=product.images.first %}
+                                {% if product_image %}
+                                    <img src="{{ product_image.image.url }}" alt="{{ product.name }}" class="product-image">
+                                {% else %}
+                                    <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ product.name }}" class="product-image">
+                                {% endif %}
+                            {% endwith %}
+                            
+                            {% if product.discount_price %}
+                                <div class="product-badge">{{ product.get_discount_percent }}% OFF</div>
+                            {% endif %}
+                            
+                            {% if user.is_authenticated %}
+                                <button class="wishlist-btn" 
+                                    data-product-id="{{ product.id }}" 
+                                    data-authenticated="true">
+                                    {% if product in user.wishlist.products.all %}
+                                        <i class="fas fa-heart"></i>
+                                    {% else %}
+                                        <i class="far fa-heart"></i>
+                                    {% endif %}
+                                </button>
+                            {% else %}
+                                <button class="wishlist-btn" 
+                                    data-product-id="{{ product.id }}" 
+                                    data-authenticated="false">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-details">
+                            <div class="product-category">{{ product.category.name }}</div>
+                            <h3 class="product-title">
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h3>
+                            <div class="product-price">
+                                {% if product.discount_price %}
+                                    <span class="product-price-original">${{ product.price }}</span>
+                                    <span class="product-price-discount">${{ product.discount_price }}</span>
+                                {% else %}
+                                    ${{ product.price }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

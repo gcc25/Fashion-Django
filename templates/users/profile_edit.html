@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Profile - Elegance Fashion Store{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <h1 class="section-title">Edit Profile</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">{{ user.get_full_name|default:user.username }}</h2>
+                    <p class="text-gray-500">{{ user.email }}</p>
+                </div>
+                
+                <div class="p-4">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="{% url 'users:profile' %}" class="block py-2 px-3 rounded hover:bg-gray-100">
+                                <i class="fas fa-user mr-2"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'orders:order_history' %}" class="block py-2 px-3 rounded hover:bg-gray-100">
+                                <i class="fas fa-shopping-bag mr-2"></i> My Orders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'users:wishlist' %}" class="block py-2 px-3 rounded hover:bg-gray-100">
+                                <i class="fas fa-heart mr-2"></i> My Wishlist
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'account_logout' %}" class="block py-2 px-3 rounded hover:bg-gray-100 text-red-600">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold">Edit Profile Information</h2>
+                </div>
+                
+                <div class="p-6">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div class="form-group">
+                                    <label for="id_address" class="form-label">Address</label>
+                                    {{ form.address|as_crispy_field }}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="id_city" class="form-label">City</label>
+                                    {{ form.city|as_crispy_field }}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="id_postal_code" class="form-label">Postal Code</label>
+                                    {{ form.postal_code|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="form-group">
+                                    <label for="id_country" class="form-label">Country</label>
+                                    {{ form.country|as_crispy_field }}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="id_phone" class="form-label">Phone</label>
+                                    {{ form.phone|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex space-x-4">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'users:profile' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

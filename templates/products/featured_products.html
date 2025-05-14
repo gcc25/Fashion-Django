@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Elegance Fashion Store - Stylish Clothing & Bags{% endblock %}
+{% block meta_description %}Discover the latest fashion trends in clothing and bags at Elegance. Shop our premium collection of stylish and elegant fashion items.{% endblock %}
+{% block meta_keywords %}fashion, elegant clothing, designer bags, luxury fashion, stylish accessories{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero">
+        <img src="https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750" alt="Fashion collection" class="hero-bg">
+        <div class="hero-content">
+            <h1 class="hero-title animate-fade-in">Elevate Your Style</h1>
+            <p class="hero-subtitle animate-fade-in">Discover our premium collection of elegant fashion and accessories</p>
+            <a href="{% url 'products:product_list' %}" class="hero-btn animate-fade-in">Shop Now</a>
+        </div>
+    </section>
+    
+    <!-- Featured Products -->
+    <section class="container">
+        <h2 class="section-title animate-fade-in">Featured Products</h2>
+        
+        <div class="product-grid">
+            {% for product in products %}
+                <div class="product-card animate-fade-in">
+                    <div class="product-image-container">
+                        {% with product_image=product.images.first %}
+                            {% if product_image %}
+                                <img src="{{ product_image.image.url }}" alt="{{ product.name }}" class="product-image">
+                            {% else %}
+                                <img src="{% static 'img/product-placeholder.jpg' %}" alt="{{ product.name }}" class="product-image">
+                            {% endif %}
+                        {% endwith %}
+                        
+                        {% if product.discount_price %}
+                            <div class="product-badge">{{ product.get_discount_percent }}% OFF</div>
+                        {% endif %}
+                        
+                        {% if user.is_authenticated %}
+                            <button class="wishlist-btn" 
+                                data-product-id="{{ product.id }}" 
+                                data-authenticated="true">
+                                {% if product in user.wishlist.products.all %}
+                                    <i class="fas fa-heart"></i>
+                                {% else %}
+                                    <i class="far fa-heart"></i>
+                                {% endif %}
+                            </button>
+                        {% else %}
+                            <button class="wishlist-btn" 
+                                data-product-id="{{ product.id }}" 
+                                data-authenticated="false">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="product-details">
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <h3 class="product-title">
+                            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                        </h3>
+                        <div class="product-price">
+                            {% if product.discount_price %}
+                                <span class="product-price-original">${{ product.price }}</span>
+                                <span class="product-price-discount">${{ product.discount_price }}</span>
+                            {% else %}
+                                ${{ product.price }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No featured products available at the moment.</p>
+            {% endfor %}
+        </div>
+    </section>
+    
+    <!-- Categories -->
+    <section class="container mb-8">
+        <h2 class="section-title animate-fade-in">Shop by Category</h2>
+        
+        <div class="product-grid">
+            {% for category in categories %}
+                <a href="{% url 'products:product_list_by_category' category.slug %}" class="product-card animate-fade-in">
+                    <div class="product-image-container">
+                        {% if category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="product-image">
+                        {% else %}
+                            <img src="https://images.pexels.com/photos/994523/pexels-photo-994523.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750" alt="{{ category.name }}" class="product-image">
+                        {% endif %}
+                    </div>
+                    
+                    <div class="product-details text-center">
+                        <h3 class="product-title">{{ category.name }}</h3>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+    
+    <!-- Promotional Banner -->
+    <section class="container mb-8">
+        <div class="hero" style="height: 400px; min-height: auto;">
+            <img src="https://images.pexels.com/photos/5709661/pexels-photo-5709661.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750" alt="Special offer" class="hero-bg">
+            <div class="hero-content">
+                <h2 class="hero-title animate-fade-in">New Collection</h2>
+                <p class="hero-subtitle animate-fade-in">Get up to 30% off on selected items</p>
+                <a href="{% url 'products:product_list' %}" class="hero-btn animate-fade-in">Shop Now</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
