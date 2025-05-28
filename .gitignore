@@ -48,3 +48,4 @@ staticfiles/
 
 # Tailwind CSS
 static/css/styles.css
+.env
