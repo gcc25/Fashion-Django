@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Added for Django 5 compatibility
 ]
 
 ROOT_URLCONF = 'fashion_store.urls'
@@ -147,3 +148,6 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 ]
+
+# Cart session settings
+CART_SESSION_ID = 'cart'
